@@ -2,7 +2,7 @@
 /*
 Plugin Name: JBFJ Custom Registration
 Description: Front end registration and login
-Version: 0.1
+Version: 0.2
 Author: Bryce Flory
 */
 
