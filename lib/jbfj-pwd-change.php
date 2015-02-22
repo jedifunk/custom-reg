@@ -1,62 +1,60 @@
 <?php
-	// password reset form
-function jbfj_pwd_reset() {
+function jbfj_change_password_form() {
+	global $post;	
+ 
+	if (is_singular()) :
+		$current_url = get_permalink($post->ID);
+	else :
+		$pageURL = 'http';
+		if ($_SERVER["HTTPS"] == "on") $pageURL .= "s";
+		$pageURL .= "://";
+		if ($_SERVER["SERVER_PORT"] != "80") $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+		else $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+		$current_url = $pageURL;
+	endif;		
+	$redirect = $current_url; ?>
+
+	<div class="form-wrap">
+		<?php ob_start();
+ 
+		// show any error messages after form submission
+		jbfj_show_error_messages(); ?>
+		<?php if(isset($_GET['password-reset']) && $_GET['password-reset'] == 'true') { ?>
+			<div class="jbfj_message success">
+				<span><?php _e('Password changed successfully', 'rcp'); ?></span>
+			</div>
+		<?php } ?>
+		<form id="jbfj_password_form" method="POST" action="<?php echo $current_url; ?>">
+			<fieldset>
+				<div class="form-group">
+					<label for="jbfj_user_pass"><?php _e('New Password', 'rcp'); ?></label>
+					<input name="jbfj_user_pass" id="jbfj_user_pass" class="required" type="password"/>
+				</div>
+				<div class="form-group">
+					<label for="jbfj_user_pass_confirm"><?php _e('Password Confirm', 'rcp'); ?></label>
+					<input name="jbfj_user_pass_confirm" id="jbfj_user_pass_confirm" class="required" type="password"/>
+				</div>
+				<div class="form-group">
+					<input type="hidden" name="jbfj_action" value="reset-password"/>
+					<input type="hidden" name="jbfj_redirect" value="<?php echo $redirect; ?>"/>
+					<input type="hidden" name="jbfj_password_nonce" value="<?php echo wp_create_nonce('rcp-password-nonce'); ?>"/>
+					<input id="jbfj_password_submit" type="submit" class="btn btn-primary btn-block" value="<?php _e('Change Password', 'jbfj'); ?>"/>
+				</div>
+			</fieldset>
+		</form>
+	<?php return ob_get_clean(); ?>
+	</div><!-- .form-wrap -->
+<?php }
+ 
+// password reset form
+function jbfj_reset_password_form() {
 	if(is_user_logged_in()) {
 		return jbfj_change_password_form();
 	}
 }
-add_shortcode('pwd_reset_form', 'jbfj_pwd_reset');
-
-// create form
-function jbfj_change_password_form() {
-	global $post;	
+add_shortcode('pwd_reset_form', 'jbfj_reset_password_form');
  
-   	if (is_singular()) :
-   		$current_url = get_permalink($post->ID);
-   	else :
-   		$pageURL = 'http';
-   		if ($_SERVER["HTTPS"] == "on") $pageURL .= "s";
-   		$pageURL .= "://";
-   		if ($_SERVER["SERVER_PORT"] != "80") $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
-   		else $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
-   		$current_url = $pageURL;
-   	endif;		
-	$redirect = $current_url;
  
-	ob_start();
- 
-		// show any error messages after form submission
-		jbfj_show_error_messages(); ?>
-		<div class="form-wrap">
-			<?php if(isset($_GET['password-reset']) && $_GET['password-reset'] == 'true') { ?>
-				<div class="jbfj_message success">
-					<span><?php _e('Password changed successfully', 'rcp'); ?></span>
-				</div>
-			<?php } ?>
-			<form id="jbfj_password_form" method="POST" action="<?php echo $current_url; ?>">
-				<fieldset>
-					<div class="form-group">
-						<label for="jbfj_user_pass"><?php _e('New Password', 'rcp'); ?></label>
-						<input name="jbfj_user_pass" id="jbfj_user_pass" class="required" type="password"/>
-					</div>
-					<div class="form-group">
-						<label for="jbfj_user_pass_confirm"><?php _e('Password Confirm', 'rcp'); ?></label>
-						<input name="jbfj_user_pass_confirm" id="jbfj_user_pass_confirm" class="required" type="password"/>
-					</div>
-					<div class="form-group">
-						<input type="hidden" name="jbfj_action" value="reset-password"/>
-						<input type="hidden" name="jbfj_redirect" value="<?php echo $redirect; ?>"/>
-						<input type="hidden" name="jbfj_password_nonce" value="<?php echo wp_create_nonce('rcp-password-nonce'); ?>"/>
-						<input id="jbfj_password_submit" class="btn btn-primary btn-block" type="submit" value="<?php _e('Change Password', 'jbfj'); ?>"/>
-					</div>
-				</fieldset>
-			</form>
-		</div><!-- .form-wrap -->
-	<?php
-	return ob_get_clean();	
-}
-
-// process the form
 function jbfj_reset_password() {
 	// reset a users password
 	if(isset($_POST['jbfj_action']) && $_POST['jbfj_action'] == 'reset-password') {
@@ -67,6 +65,7 @@ function jbfj_reset_password() {
 			return;
  
 		if(wp_verify_nonce($_POST['jbfj_password_nonce'], 'rcp-password-nonce')) {
+ 
 			if($_POST['jbfj_user_pass'] == '' || $_POST['jbfj_user_pass_confirm'] == '') {
 				// password(s) field empty
 				jbfj_errors()->add('password_empty', __('Please enter a password, and confirm it', 'jbfj'));
@@ -93,8 +92,8 @@ function jbfj_reset_password() {
 		}
 	}	
 }
-
-// errors
+add_action('init', 'jbfj_reset_password');
+ 
 if(!function_exists('jbfj_show_error_messages')) {
 	// displays error messages from form submissions
 	function jbfj_show_error_messages() {
@@ -109,7 +108,7 @@ if(!function_exists('jbfj_show_error_messages')) {
 		}	
 	}
 }
-
+ 
 if(!function_exists('jbfj_errors')) { 
 	// used for tracking error messages
 	function jbfj_errors(){

@@ -1,22 +1,48 @@
 <?php
 function ajax_auth_init(){
 	if ( ! is_user_logged_in() ) {
-		wp_enqueue_script('validate-script', JBFJ_PLUGIN_URL . '/lib/js/jquery.validate.js', array('jquery'), null, true ); 
-	    wp_enqueue_script('ajax-auth-script', JBFJ_PLUGIN_URL . '/lib/js/jbfj-ajax-auth-script.js', array('jquery'), null, true ); 
-	
-	    wp_localize_script( 'ajax-auth-script', 'ajax_auth_object', array( 
-	        'ajaxurl' => admin_url( 'admin-ajax.php' ),
-	        'redirecturl' => home_url(),
-	        'loadingmessage' => __('Sending user info, please wait...')
-	    ));
+		wp_enqueue_script('validate-script', JBFJ_PLUGIN_URL . 'lib/js/jquery.validate.min.js', array('jquery'), null, true ); 
+
+	    wp_enqueue_script('ajax-auth-script', JBFJ_PLUGIN_URL . 'lib/js/jbfj-ajax-auth-script.js', array('jquery'), null, true ); 
 	
 	    // Enable the user with no privileges to run ajax_login() in AJAX
 	    add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
+	    
 		// Enable the user with no privileges to run ajax_register() in AJAX
 		add_action( 'wp_ajax_nopriv_ajaxregister', 'ajax_register' );
+		
 	}
+
 }
 add_action( 'init', 'ajax_auth_init' );
+
+function ajax_localize() {
+	
+	if ( ! is_user_logged_in() ) {
+		
+		if ( is_page( 'register' ) ) {
+			
+			wp_localize_script( 'ajax-auth-script', 'ajax_auth_object', array( 
+	        	'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'redirecturl' => home_url(),
+				'vaID' => get_theme_mod('vaID'),
+				'loadingmessage' => __('Sending user info, please wait...')
+			));
+			
+		} else {
+			
+			wp_localize_script( 'ajax-auth-script', 'ajax_auth_object', array( 
+		        'ajaxurl' => admin_url( 'admin-ajax.php' ),
+		        'redirecturl' => get_permalink(),
+		        'vaID' => get_theme_mod('vaID'),
+		        'loadingmessage' => __('Sending user info, please wait...')
+		    ));
+		    
+		}
+
+	}
+}
+add_action( 'template_redirect', 'ajax_localize' );
   
 function ajax_login(){
 
@@ -55,8 +81,8 @@ function ajax_register(){
 	// Nonce is checked, get the POST data and sign user on
 	$fields = array();
 	$fields['user_login'] = sanitize_user($_POST['username']);
-	$fields['user_email'] = sanitize_email( $_POST['email']);
-	$fields['user_pass'] = wp_generate_password();
+	$fields['user_email'] = sanitize_email( $_POST['username']);
+	$fields['user_pass'] = wp_generate_password(5, true, false);
 	$fields['first_name'] = sanitize_text_field($_POST['user_first']);
 	$fields['last_name'] = sanitize_text_field($_POST['user_last']);
 	$fields['phone'] = sanitize_text_field($_POST['phone']);
@@ -105,10 +131,6 @@ function ajax_register(){
 		    
 		    wp_set_current_user( $uid );
 		    wp_set_auth_cookie( $uid, true );
-		    
-		    // Grab topic cookie and set redirect
-			//$topic_cookie = isset( $_COOKIE['topic-cookie'] ) ? $_COOKIE['topic-cookie'] : 'not set';
-			//wp_redirect( home_url( $_COOKIE['topic-cookie'] ) );
 
 	        echo json_encode(array('loggedin'=>true, 'message'=>__('Registration successful, redirecting...')));
 	    }

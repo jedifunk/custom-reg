@@ -16,7 +16,6 @@ function jbfj_profile_data() {
 	
 	
 	$items = array();
-	$items['Username'] = $current->user_login;
 	$items['Email'] = $current->user_email;
 	$items['First Name'] = $current->first_name;
 	$items['Last Name'] = $current->last_name;
