@@ -17,7 +17,7 @@ function jbfj_login_form_fields() {
  
 	ob_start(); ?> 
 		<form id="login" class="ajax-auth" action="login" method="post">
-			<p class="status"></p>
+			<div class="status"></div>
 			<?php wp_nonce_field( 'ajax-login-nonce', 'security' ); ?>
 			<fieldset>
 				<div class="form-group">
@@ -33,6 +33,7 @@ function jbfj_login_form_fields() {
 				</div>
 			</fieldset>
 		</form>
+		<p>Forgot password? <a href="<?php echo site_url(); ?>/my-profile">Click here</a></p>
 	<?php
 	return ob_get_clean();
 }
