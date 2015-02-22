@@ -22,6 +22,24 @@ Shortcodes available
 + Forgot `[forgot_form]`
 + User Profile Output `[jbfj_profile]`
 
+**Available Filters**
+Registration has three filters currently that are called via `jbfj_reg_form_filter`
++ `<form>` class using `form_class`
++ Input field wrapper using `field_before` and `field_after`
++ Button classes, text, and optional icon using `button_class`, `button_text` and `button_icon` respectively.
+
+Example usage
+```
+function reg_btn( $args ){
+		$args = array(
+			'button_text' => 'Join Today!',
+			'button_icon' => ''
+		);
+	return $args;
+}
+add_filter( 'jbfj_reg_form_filter', 'reg_btn' );
+```
+
 Change Log:
 ----------
 
